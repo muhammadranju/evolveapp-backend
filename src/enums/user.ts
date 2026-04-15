@@ -1,0 +1,5 @@
+export enum USER_ROLES {
+  SUPER_ADMIN = 'SUPER_ADMIN',
+  COACH = 'COACH',
+  ATHLETE = 'ATHLETE',
+}
