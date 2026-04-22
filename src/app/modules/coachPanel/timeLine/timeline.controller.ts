@@ -12,8 +12,8 @@ export const getAthleteTimelineController = async (
 ) => {
   try {
     const athleteId = req.params.athleteId;
-    console.log(athleteId);
-    const data = await buildTimelineHistory(athleteId);
+    const year = req.query.year ? parseInt(req.query.year as string) : undefined;
+    const data = await buildTimelineHistory(athleteId, year);
 
     res.status(200).json({
       success: true,
@@ -36,7 +36,7 @@ export const bulkUpdateTimelinePhaseController = async (
 ) => {
   try {
     const { athleteId } = req.params;
-    const { timelineIds, newPhase } = req.body;
+    const { timelineIds, newPhase, year } = req.body;
 
     if (
       !timelineIds ||
@@ -60,13 +60,14 @@ export const bulkUpdateTimelinePhaseController = async (
       athleteId,
       timelineIds,
       newPhase,
+      year ? parseInt(year) : undefined,
     );
 
     return res.status(200).json({
       success: true,
-      message: 'Timeline phases updated successfully',
-      matchedCount: result.matchedCount,
-      modifiedCount: result.modifiedCount,
+      message: 'Bulk phase updated successfully',
+      updatedCount: result.modifiedCount || 0,
+      createdCount: (result.upsertedCount || 0) + (result.insertedCount || 0),
     });
   } catch (error: any) {
     return res.status(500).json({

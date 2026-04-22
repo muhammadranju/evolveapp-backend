@@ -69,16 +69,24 @@ const calculateConditionalAverages = (data: any[]) => {
 // ------------------------------------
 // Main Builder
 // ------------------------------------
-export const buildTimelineHistory = async (userId: string) => {
-  const athlete = await AthleteModel.findById(userId)
-    .select('checkInDay phase')
-    .lean();
+// ------------------------------------
+// Main Builder
+// ------------------------------------
+export const buildTimelineHistory = async (userId: string, targetYear?: number) => {
+  const athlete = await AthleteModel.findById(userId).lean();
 
   if (!athlete?.checkInDay) return [];
 
   const checkDayIndex = dayMap[athlete.checkInDay];
+  const year = targetYear || new Date().getFullYear();
 
-  // ✅ Fetch only required fields (PERF)
+  // Find the first check-in date of the target year
+  let startDate = new Date(year, 0, 1);
+  while (startDate.getDay() !== checkDayIndex) {
+    startDate.setDate(startDate.getDate() + 1);
+  }
+
+  // 1. Fetch tracking data
   const allTracking = await DailyTrackingModel.find({ userId })
     .select(
       'date weight nutrition activityStep training.trainingCompleted training.duration',
@@ -86,13 +94,8 @@ export const buildTimelineHistory = async (userId: string) => {
     .sort({ date: 1 })
     .lean();
 
-  if (!allTracking.length) return [];
-
-  // ------------------------------------
-  // Group data by weekly check-in
-  // ------------------------------------
+  // 2. Group data by weekly check-in
   const groupedByCheckIn = new Map<string, any[]>();
-
   for (const d of allTracking) {
     if (!d.date) continue;
     const dt = new Date(d.date);
@@ -103,16 +106,11 @@ export const buildTimelineHistory = async (userId: string) => {
     if (!groupedByCheckIn.has(checkInDateStr)) {
       groupedByCheckIn.set(checkInDateStr, []);
     }
-
     groupedByCheckIn.get(checkInDateStr)!.push(d);
   }
 
-  // ------------------------------------
-  // Prepare bulk DB operations
-  // ------------------------------------
+  // 3. Sync history from tracking data (ensure all tracking data has history records)
   const bulkOps: any[] = [];
-  const results: any[] = [];
-
   for (const [checkInDate, windowData] of groupedByCheckIn.entries()) {
     const nextCheckInDate = new Date(checkInDate);
     nextCheckInDate.setDate(nextCheckInDate.getDate() + 7);
@@ -135,29 +133,48 @@ export const buildTimelineHistory = async (userId: string) => {
         upsert: true,
       },
     });
-
-    // Response stays unchanged
-    results.push({
-      userId,
-      phase: athlete.phase,
-      checkInDate,
-      nextCheckInDate: nextCheckInDate.toISOString().slice(0, 10),
-      averages,
-    });
   }
 
-  // ✅ Single DB call
   if (bulkOps.length) {
     await TimelineHistoryModel.bulkWrite(bulkOps);
   }
 
-  // ✅ Fetch with IDs after bulk write to return them
-  const finalResults = await TimelineHistoryModel.find({ userId })
-    .select('_id userId phase checkInDate nextCheckInDate averages')
-    .sort({ checkInDate: 1 })
-    .lean();
+  // 4. Fetch all history records for this user to merge into the yearly view
+  const allHistory = await TimelineHistoryModel.find({ userId }).lean();
 
-  return finalResults;
+  // 5. Generate exactly 52 weeks for the target year
+  const results = [];
+  for (let i = 0; i < 52; i++) {
+    const currentCheckIn = new Date(startDate);
+    currentCheckIn.setDate(currentCheckIn.getDate() + i * 7);
+    const dateStr = currentCheckIn.toISOString().slice(0, 10);
+
+    const match = allHistory.find((h: any) => h.checkInDate === dateStr);
+
+    if (match) {
+      results.push({
+        ...match,
+        week: i + 1,
+        exists: true,
+      });
+    } else {
+      const nextCheckIn = new Date(currentCheckIn);
+      nextCheckIn.setDate(nextCheckIn.getDate() + 7);
+      results.push({
+        userId,
+        checkInDate: dateStr,
+        nextCheckInDate: nextCheckIn.toISOString().slice(0, 10),
+        phase: 'Select phase',
+        averages: { trainingDay: null, restDay: null },
+        dailyData: [],
+        isPlaceholder: true,
+        week: i + 1,
+        exists: false,
+      });
+    }
+  }
+
+  return results;
 };
 
 // ------------------------------------
@@ -165,36 +182,90 @@ export const buildTimelineHistory = async (userId: string) => {
 // ------------------------------------
 export const bulkUpdateTimelinePhaseService = async (
   userId: string,
-  timelineIds: string[],
+  timelineIds: any[],
   newPhase: string,
+  year?: number,
 ) => {
-  // Validate if userId is a valid ObjectId
   if (!mongoose.Types.ObjectId.isValid(userId)) {
-    // throw new Error(`Invalid athleteId: ${userId}`);
     throw new ApiError(StatusCodes.BAD_REQUEST, `Invalid athleteId: ${userId}`);
   }
 
+  // Fetch the full timeline to resolve 'empty-N' placeholders for the correct year
+  const fullTimeline = await buildTimelineHistory(userId, year);
+
   const bulkOps = timelineIds
-    .filter(id => mongoose.Types.ObjectId.isValid(id)) // Filter out invalid IDs
-    .map((id: string) => ({
-      updateOne: {
-        filter: {
-          _id: new mongoose.Types.ObjectId(id),
+    .map(item => {
+      let filter: any = { userId: new mongoose.Types.ObjectId(userId) };
+      let update: any = { $set: { phase: newPhase } };
+      let checkInDate: any = '';
+
+      // Handle 'empty-N' format from frontend
+      if (typeof item === 'string' && item.startsWith('empty-')) {
+        const weekNum = parseInt(item.replace('empty-', ''));
+        const index = weekNum - 1;
+        if (fullTimeline[index]) {
+          checkInDate = fullTimeline[index].checkInDate;
+          filter.checkInDate = checkInDate;
+        }
+      } else if (typeof item === 'string') {
+        if (mongoose.Types.ObjectId.isValid(item)) {
+          filter._id = new mongoose.Types.ObjectId(item);
+        } else if (/^\d{4}-\d{2}-\d{2}$/.test(item)) {
+          checkInDate = item;
+          filter.checkInDate = item;
+        }
+      } else if (typeof item === 'object' && item !== null) {
+        if (item.id && mongoose.Types.ObjectId.isValid(item.id)) {
+          filter._id = new mongoose.Types.ObjectId(item.id);
+        }
+        if (item.checkInDate) {
+          checkInDate = item.checkInDate;
+          filter.checkInDate = item.checkInDate;
+        }
+      }
+
+      if (!filter._id && !filter.checkInDate) {
+        return null;
+      }
+
+      if (checkInDate) {
+        delete filter._id;
+        filter.checkInDate = checkInDate;
+
+        const nextDate = new Date(checkInDate);
+        nextDate.setDate(nextDate.getDate() + 7);
+        const nextCheckInDateStr = nextDate.toISOString().slice(0, 10);
+
+        update.$setOnInsert = {
           userId: new mongoose.Types.ObjectId(userId),
+          checkInDate: checkInDate,
+          nextCheckInDate: nextCheckInDateStr,
+          dailyData: [],
+          averages: {
+            trainingDay: null,
+            restDay: null,
+          },
+        };
+      }
+
+      return {
+        updateOne: {
+          filter,
+          update,
+          upsert: true,
         },
-        update: { $set: { phase: newPhase } },
-      },
-    }));
+      };
+    })
+    .filter(Boolean);
 
   if (bulkOps.length === 0) {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
-      'No valid timelineIds provided',
+      'No valid timeline items provided',
     );
-    // throw new Error('No valid timelineIds provided');
   }
 
-  const result = await TimelineHistoryModel.bulkWrite(bulkOps);
+  const result = await TimelineHistoryModel.bulkWrite(bulkOps as any);
   return result;
 };
 
