@@ -18,4 +18,5 @@ export interface ITrainingPushDayHistory {
   time: ITime;
   pushData: IPushData[];
   note: string;
+  dateTime: Date;
 }

@@ -16,7 +16,7 @@ const TimeSchema = new Schema<ITime>(
       required: true,
     },
   },
-  { _id: false }
+  { _id: false },
 );
 const PushDataSchema = new Schema<IPushData>(
   {
@@ -26,7 +26,7 @@ const PushDataSchema = new Schema<IPushData>(
     set: { type: Number, required: true },
     exerciseName: { type: String },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const TrainingPushDayHistorySchema = new Schema<ITrainingPushDayHistory>(
@@ -41,12 +41,15 @@ const TrainingPushDayHistorySchema = new Schema<ITrainingPushDayHistory>(
     time: { type: TimeSchema, required: true },
     pushData: { type: [PushDataSchema], required: true },
     note: { type: String, default: '', trim: true },
+    dateTime: {
+      type: Date,
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const TrainingPushDayHistoryModel =
   mongoose.model<ITrainingPushDayHistory>(
     'TrainingPushDayHistory',
-    TrainingPushDayHistorySchema
+    TrainingPushDayHistorySchema,
   );
