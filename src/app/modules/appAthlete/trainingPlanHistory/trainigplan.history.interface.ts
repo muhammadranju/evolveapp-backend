@@ -10,6 +10,7 @@ export interface IPushData {
   rir: string;
   exerciseName: string;
   set: number;
+  dateTime: string;
 }
 
 export interface ITrainingPushDayHistory {
@@ -18,5 +19,5 @@ export interface ITrainingPushDayHistory {
   time: ITime;
   pushData: IPushData[];
   note: string;
-  dateTime: Date;
+  dateTime: string;
 }

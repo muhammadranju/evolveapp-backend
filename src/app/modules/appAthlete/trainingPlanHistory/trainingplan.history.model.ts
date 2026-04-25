@@ -42,7 +42,7 @@ const TrainingPushDayHistorySchema = new Schema<ITrainingPushDayHistory>(
     pushData: { type: [PushDataSchema], required: true },
     note: { type: String, default: '', trim: true },
     dateTime: {
-      type: Date,
+      type: String,
     },
   },
   { timestamps: true },
