@@ -20,4 +20,5 @@ export interface ITrainingPlan extends Document {
   exercise: IExercise[];
   dificulty: string;
   comment: string;
+  position: number;
 }

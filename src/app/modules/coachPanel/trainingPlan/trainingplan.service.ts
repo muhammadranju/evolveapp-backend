@@ -6,6 +6,13 @@ export class TrainingPlanService {
    * Create a new training plan
    */
   async createTrainingPlan(payload: ITrainingPlan) {
+    const lastPlan = await TrainingPlanModel.findOne({
+      userId: payload.userId,
+    }).sort({ position: -1 });
+
+    const nextPosition = lastPlan ? lastPlan.position + 1 : 1;
+    payload.position = nextPosition;
+
     const result = await TrainingPlanModel.create(payload);
     return result;
   }
@@ -15,7 +22,7 @@ export class TrainingPlanService {
    */
   async getTrainingPlansByName(
     trainingPlanName: string | undefined,
-    userId: string
+    userId: string,
   ) {
     const query: Record<string, any> = { userId };
 
@@ -26,13 +33,15 @@ export class TrainingPlanService {
       };
     }
 
-    const trainingPlans = await TrainingPlanModel.find(query);
+    const trainingPlans = await TrainingPlanModel.find(query).sort({
+      position: 1,
+    });
 
     return trainingPlans;
   }
 
   async getTrainingPlansById(id: string, userId: string) {
-    const item = await TrainingPlanModel.findById({ _id: id, userId });
+    const item = await TrainingPlanModel.findOne({ _id: id, userId });
     return item;
   }
 
@@ -42,12 +51,12 @@ export class TrainingPlanService {
   async updateTrainingPlan(
     userId: string,
     id: string,
-    payload: Partial<ITrainingPlan>
+    payload: Partial<ITrainingPlan>,
   ) {
     const updatedTrainingPlan = await TrainingPlanModel.findOneAndUpdate(
       { _id: id, userId },
       payload,
-      { new: true }
+      { new: true },
     );
 
     return updatedTrainingPlan;
@@ -62,5 +71,58 @@ export class TrainingPlanService {
       _id: id,
     });
     return result;
+  }
+
+  /**
+   * Reorder Training Plans
+   */
+  async reorderTrainingPlans(userId: string, id: string, newPosition: number) {
+    // 1. Fetch all items for this user, sorted by position
+    const items = await TrainingPlanModel.find({ userId }).sort({ position: 1 });
+
+    if (items.length === 0) {
+      throw new Error('No training plans found for this user');
+    }
+
+    // 2. Find the item to move
+    const itemIndex = items.findIndex(item => item._id.toString() === id);
+    if (itemIndex === -1) {
+      throw new Error('Training plan not found');
+    }
+
+    const itemToMove = items[itemIndex];
+
+    // 3. Remove item from current position
+    const otherItems = items.filter((_, idx) => idx !== itemIndex);
+
+    // 4. Insert at target position (1-based to 0-based)
+    // Clamp newPosition between 1 and total items count
+    const targetPosition = Math.max(1, Math.min(newPosition, items.length));
+    const targetIndex = targetPosition - 1;
+
+    otherItems.splice(targetIndex, 0, itemToMove);
+
+    // 5. Prepare bulk updates only for changed positions
+    const bulkOps = otherItems
+      .map((item, index) => {
+        const sequentialPos = index + 1;
+        if (item.position !== sequentialPos) {
+          return {
+            updateOne: {
+              filter: { _id: item._id },
+              update: { $set: { position: sequentialPos } },
+            },
+          };
+        }
+        return null;
+      })
+      .filter(op => op !== null);
+
+    if (bulkOps.length > 0) {
+      await TrainingPlanModel.bulkWrite(bulkOps as any);
+    }
+
+    // Return the updated item
+    return await TrainingPlanModel.findById(id);
   }
 }

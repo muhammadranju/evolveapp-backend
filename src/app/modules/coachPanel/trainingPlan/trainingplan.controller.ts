@@ -93,6 +93,26 @@ export class TrainingPlanController {
     }
   );
 
+  reorderTrainingPlans = catchAsync(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const { userId, id } = req.params;
+      const { newPosition } = req.body;
+
+      const result = await trainingPlanService.reorderTrainingPlans(
+        userId,
+        id,
+        newPosition
+      );
+
+      sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: 'Training plans reordered successfully',
+        data: result,
+      });
+    }
+  );
+
   /**
    * Delete training plan
    * DELETE /api/v1/training-plans/:id

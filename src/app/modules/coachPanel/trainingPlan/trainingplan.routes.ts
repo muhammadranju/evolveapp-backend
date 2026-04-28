@@ -7,7 +7,7 @@ const router = express.Router();
 const controller = new TrainingPlanController();
 
 /**
- * Create training plan
+ * Create training plan``
  */
 router.post('/:userId', auth(USER_ROLES.COACH), controller.addTrainingPlan);
 
@@ -19,7 +19,7 @@ router.get('/:userId', controller.getTrainingPlansByName);
 router.get(
   '/id/:id',
   auth(USER_ROLES.ATHLETE, USER_ROLES.COACH),
-  controller.getTrainingPlansById
+  controller.getTrainingPlansById,
 );
 
 /**
@@ -28,7 +28,13 @@ router.get(
 router.put(
   '/:userId/:id',
   auth(USER_ROLES.COACH),
-  controller.updateTrainingPlan
+  controller.updateTrainingPlan,
+);
+
+router.patch(
+  '/reorder/:userId/:id',
+  auth(USER_ROLES.COACH),
+  controller.reorderTrainingPlans,
 );
 
 /**
