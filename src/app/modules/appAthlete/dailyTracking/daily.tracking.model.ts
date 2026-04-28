@@ -27,17 +27,25 @@ const TrainingSchema = new Schema(
   {
     trainingCompleted: { type: Boolean, required: false },
 
+    // trainingPlan: {
+    //   type: [String],
+    //   enum: TRAINING_PLAN_VALUES,
+    //   required: false,
+    // },
     trainingPlan: {
       type: [String],
-      enum: TRAINING_PLAN_VALUES,
       required: false,
     },
 
     cardioCompleted: { type: Boolean, required: false },
 
+    // cardioType: {
+    //   type: String,
+    //   enum: CARDIO_TYPE_VALUES,
+    //   required: false,
+    // },
     cardioType: {
       type: String,
-      enum: CARDIO_TYPE_VALUES,
       required: false,
     },
 
@@ -61,19 +69,24 @@ const NutritionSchema = new Schema(
 
 const WomanHealthSchema = new Schema(
   {
-    cyclePhase: {
-      type: String,
-      enum: CYCLE_PHASE_VALUES,
-      required: false,
-    },
+    // cyclePhase: {
+    //   type: String,
+    //   enum: CYCLE_PHASE_VALUES,
+    //   required: false,
+    // },
+    cyclePhase: { type: String, required: false },
 
     cycleDay: { type: String, required: false },
     pmsSymptoms: { type: Number, required: false },
     cramps: { type: Number, required: false },
 
+    // symptoms: {
+    //   type: [String],
+    //   enum: WOMEN_SYMPTOMS_VALUES,
+    //   required: false,
+    // },
     symptoms: {
       type: [String],
-      enum: WOMEN_SYMPTOMS_VALUES,
       required: false,
     },
   },

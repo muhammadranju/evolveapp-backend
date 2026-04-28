@@ -22,7 +22,27 @@ export class ShowManagementService {
    */
   async getAllShows() {
     const shows = await ShowManagementModel.find().sort({ createdAt: -1 });
-    return shows;
+
+    // Filtered summary objects based on countdown
+    // Last Seven Days: 1 to 7 days
+    const lastSevenDaysShows = shows.filter(
+      show => show.countdown >= 1 && show.countdown <= 7,
+    );
+
+    // Last Upcoming: 8 to 14 days (near-upcoming/approaching soon)
+    const lastUpcomingShows = shows.filter(
+      show => show.countdown >= 8 && show.countdown <= 60,
+    );
+
+    // Completed: 0 days or less
+    const completedShows = shows.filter(show => show.countdown <= 0);
+
+    return {
+      shows,
+      upcomingShows: lastUpcomingShows.length,
+      peakWeekActive: lastSevenDaysShows.length,
+      completedShows: completedShows.length,
+    };
   }
 
   /**
@@ -82,13 +102,19 @@ export class ShowManagementService {
     );
 
     if (updatedUsers.matchedCount === 0) {
-      throw new ApiError(StatusCodes.BAD_REQUEST, 'No athletes found with the provided IDs');
+      throw new ApiError(
+        StatusCodes.BAD_REQUEST,
+        'No athletes found with the provided IDs',
+      );
     }
 
     if (updatedUsers.modifiedCount === 0) {
       // If it's a single user, it's likely already assigned
       if (userObjectIds.length === 1) {
-        throw new ApiError(StatusCodes.BAD_REQUEST, 'Show already assigned to this athlete');
+        throw new ApiError(
+          StatusCodes.BAD_REQUEST,
+          'Show already assigned to this athlete',
+        );
       }
     }
 
