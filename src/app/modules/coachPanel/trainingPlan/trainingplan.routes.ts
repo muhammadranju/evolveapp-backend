@@ -37,6 +37,12 @@ router.patch(
   controller.reorderTrainingPlans,
 );
 
+router.patch(
+  '/reorder-exercises/:id',
+  auth(USER_ROLES.COACH),
+  controller.reorderExercises
+);
+
 /**
  * Delete training plan by ID
  */

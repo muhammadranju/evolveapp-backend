@@ -42,6 +42,10 @@ const ExerciseSchema = new Schema<IExercise>(
       type: [TrainingPlanSetsSchema],
       required: true,
     },
+    position: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     _id: true, // Each exercise will have its own Mongo _id

@@ -113,6 +113,26 @@ export class TrainingPlanController {
     }
   );
 
+  reorderExercises = catchAsync(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const { id } = req.params;
+      const { exerciseId, newPosition } = req.body;
+
+      const result = await trainingPlanService.reorderExercises(
+        id,
+        exerciseId,
+        newPosition
+      );
+
+      sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: 'Exercises reordered successfully',
+        data: result,
+      });
+    }
+  );
+
   /**
    * Delete training plan
    * DELETE /api/v1/training-plans/:id

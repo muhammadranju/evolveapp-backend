@@ -12,6 +12,7 @@ export interface IExercise {
   exerciseName: string;
   exerciseSets: ITrainingPlanSets[];
   excerciseNote: string;
+  position: number;
 }
 export interface ITrainingPlan extends Document {
   userId: string;

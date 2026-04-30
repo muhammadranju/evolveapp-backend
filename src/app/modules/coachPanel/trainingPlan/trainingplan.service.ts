@@ -13,6 +13,13 @@ export class TrainingPlanService {
     const nextPosition = lastPlan ? lastPlan.position + 1 : 1;
     payload.position = nextPosition;
 
+    // Assign sequential positions to exercises if they exist
+    if (payload.exercise && payload.exercise.length > 0) {
+      payload.exercise.forEach((ex, index) => {
+        ex.position = index + 1;
+      });
+    }
+
     const result = await TrainingPlanModel.create(payload);
     return result;
   }
@@ -124,5 +131,47 @@ export class TrainingPlanService {
 
     // Return the updated item
     return await TrainingPlanModel.findById(id);
+  }
+
+  /**
+   * Reorder Exercises within a Training Plan
+   */
+  async reorderExercises(
+    trainingPlanId: string,
+    exerciseId: string,
+    newPosition: number,
+  ) {
+    const trainingPlan = await TrainingPlanModel.findById(trainingPlanId);
+    if (!trainingPlan) {
+      throw new Error('Training plan not found');
+    }
+
+    const exercises = [...trainingPlan.exercise];
+
+    // Find the exercise to move
+    const exerciseIndex = exercises.findIndex(
+      ex => ex._id?.toString() === exerciseId,
+    );
+
+    if (exerciseIndex === -1) {
+      throw new Error('Exercise not found in this training plan');
+    }
+
+    const [exerciseToMove] = exercises.splice(exerciseIndex, 1);
+
+    // Target index (1-based to 0-based)
+    const targetIndex = Math.max(0, Math.min(newPosition - 1, exercises.length));
+
+    exercises.splice(targetIndex, 0, exerciseToMove);
+
+    // Update sequential positions for all exercises in the array
+    exercises.forEach((ex, index) => {
+      ex.position = index + 1;
+    });
+
+    trainingPlan.exercise = exercises;
+    await trainingPlan.save();
+
+    return trainingPlan;
   }
 }
