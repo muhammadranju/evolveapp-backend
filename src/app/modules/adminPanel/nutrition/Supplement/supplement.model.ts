@@ -8,16 +8,16 @@ const SupplementItemSchema = new Schema<ISupplementItem>(
     adminId: { type: String, default: '' },
     name: { type: String, required: true },
     brand: { type: String, required: true },
-    dosage: { type: String, required: true },
-    frequency: { type: String, required: true },
-    time: { type: String, required: true },
+    dosage: { type: String },
+    frequency: { type: String },
+    time: { type: String },
     purpose: { type: String, required: true },
     note: { type: String },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const SupplementItemModel = model<ISupplementItem>(
   'SupplementItem',
-  SupplementItemSchema
+  SupplementItemSchema,
 );
