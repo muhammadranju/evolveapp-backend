@@ -4,9 +4,10 @@ export interface ISupplementItem {
   adminId: string;
   name: string;
   brand: string;
-  dosage: string;
-  frequency: string;
-  time: string;
+  dosage?: string;
+  frequency?: string;
+  time?: string;
   purpose: string;
+  productLink?: string;
   note?: string;
 }

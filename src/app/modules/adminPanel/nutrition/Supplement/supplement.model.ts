@@ -12,6 +12,7 @@ const SupplementItemSchema = new Schema<ISupplementItem>(
     frequency: { type: String },
     time: { type: String },
     purpose: { type: String, required: true },
+    productLink: { type: String, default: '' },
     note: { type: String },
   },
   { timestamps: true },
