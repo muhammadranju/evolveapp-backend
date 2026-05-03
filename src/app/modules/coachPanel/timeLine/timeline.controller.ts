@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import {
   buildTimelineHistory,
   bulkUpdateTimelinePhaseService,
+  getAvailableTimelineYearsService,
 } from './timeline.service';
 import mongoose from 'mongoose';
 import { AthleteModel } from '../../adminPanel/athlete/athleteModel';
@@ -14,6 +15,26 @@ export const getAthleteTimelineController = async (
     const athleteId = req.params.athleteId;
     const year = req.query.year ? parseInt(req.query.year as string) : undefined;
     const data = await buildTimelineHistory(athleteId, year);
+
+    res.status(200).json({
+      success: true,
+      data,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const getAvailableTimelineYearsController = async (
+  req: Request,
+  res: Response,
+) => {
+  try {
+    const { athleteId } = req.params;
+    const data = await getAvailableTimelineYearsService(athleteId);
 
     res.status(200).json({
       success: true,

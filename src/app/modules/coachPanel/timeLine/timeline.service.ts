@@ -69,10 +69,10 @@ const calculateConditionalAverages = (data: any[]) => {
 // ------------------------------------
 // Main Builder
 // ------------------------------------
-// ------------------------------------
-// Main Builder
-// ------------------------------------
-export const buildTimelineHistory = async (userId: string, targetYear?: number) => {
+export const buildTimelineHistory = async (
+  userId: string,
+  targetYear?: number,
+) => {
   const athlete = await AthleteModel.findById(userId).lean();
 
   if (!athlete?.checkInDay) return [];
@@ -86,8 +86,11 @@ export const buildTimelineHistory = async (userId: string, targetYear?: number) 
     startDate.setDate(startDate.getDate() + 1);
   }
 
-  // 1. Fetch tracking data
-  const allTracking = await DailyTrackingModel.find({ userId })
+  // 1. Fetch tracking data for the selected year
+  const allTracking = await DailyTrackingModel.find({
+    userId,
+    date: { $regex: `^${year}` },
+  })
     .select(
       'date weight nutrition activityStep training.trainingCompleted training.duration',
     )
@@ -139,8 +142,11 @@ export const buildTimelineHistory = async (userId: string, targetYear?: number) 
     await TimelineHistoryModel.bulkWrite(bulkOps);
   }
 
-  // 4. Fetch all history records for this user to merge into the yearly view
-  const allHistory = await TimelineHistoryModel.find({ userId }).lean();
+  // 4. Fetch history records for the selected year
+  const allHistory = await TimelineHistoryModel.find({
+    userId,
+    checkInDate: { $regex: `^${year}` },
+  }).lean();
 
   // 5. Generate exactly 52 weeks for the target year
   const results = [];
@@ -277,4 +283,23 @@ const getPreviousOrSameCheckIn = (date: Date, targetDay: number): Date => {
   const diff = (result.getDay() - targetDay + 7) % 7;
   result.setDate(result.getDate() - diff);
   return result;
+};
+
+export const getAvailableTimelineYearsService = async (userId: string) => {
+  const historyDates = await TimelineHistoryModel.distinct('checkInDate', {
+    userId: new mongoose.Types.ObjectId(userId),
+  });
+  const trackingDates = await DailyTrackingModel.distinct('date', { userId });
+
+  const yearsSet = new Set<number>();
+  yearsSet.add(new Date().getFullYear());
+
+  [...historyDates, ...trackingDates].forEach((dateStr: string) => {
+    if (typeof dateStr === 'string' && dateStr.includes('-')) {
+      const year = parseInt(dateStr.split('-')[0]);
+      if (!isNaN(year)) yearsSet.add(year);
+    }
+  });
+
+  return Array.from(yearsSet).sort((a, b) => b - a);
 };
