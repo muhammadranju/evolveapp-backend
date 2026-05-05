@@ -3,6 +3,7 @@ import { DailyTracking } from './daily.tracking.interface';
 import { calculateNumericAverages } from '../../../../util/calculate.average';
 import { weeklyReportService } from '../../athleteWeeklyReport/history.service';
 import { DailyTrackingNotificationHistoryModel } from './dailytracking.notification.model';
+import { formatDecimalToTimeStr } from '../../../../util/time.util';
 
 export class DailyTrackingService {
   /**
@@ -80,7 +81,13 @@ export class DailyTrackingService {
 
     const averages = calculateNumericAverages(data);
 
-    await weeklyReportService({ userId, coachId, ...averages });
+    await weeklyReportService({
+      userId,
+      coachId,
+      ...averages,
+      sleepHour: formatDecimalToTimeStr(averages.sleepHour),
+      sleepQuality: averages.sleepQuality.toString(),
+    });
 
     return { weekData, averages };
   }

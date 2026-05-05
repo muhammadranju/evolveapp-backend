@@ -1,4 +1,5 @@
 import { DailyTracking } from '../app/modules/appAthlete/dailyTracking/daily.tracking.interface';
+import { timeToDecimal } from './time.util';
 
 export function calculateNumericAverages(weeklyData: DailyTracking[]) {
   const totals = {
@@ -41,7 +42,7 @@ export function calculateNumericAverages(weeklyData: DailyTracking[]) {
 
   weeklyData.forEach(item => {
     totals.weight += Number(item.weight);
-    totals.sleepHour += Number(item.sleepHour);
+    totals.sleepHour += timeToDecimal(item.sleepHour);
     totals.sleepQuality += Number(item.sleepQuality); // convert string to number
     totals.activityStep += Number(item.activityStep);
 
@@ -62,7 +63,7 @@ export function calculateNumericAverages(weeklyData: DailyTracking[]) {
       item.energyAndWellBeing?.bodyTemperature,
     ); // string to number
 
-    totals.training.cardioDuration += Number(item.training?.duration);
+    totals.training.cardioDuration += timeToDecimal(item.training?.duration);
 
     totals.nutrition.calories += Number(item.nutrition?.calories);
     totals.nutrition.carbs += Number(item.nutrition?.carbs);
