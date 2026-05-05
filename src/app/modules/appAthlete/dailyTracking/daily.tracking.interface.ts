@@ -1,5 +1,3 @@
-
-
 // =====================
 // ENUM VALUES (RUNTIME SAFE)
 // =====================
@@ -59,7 +57,7 @@ export interface DailyTracking {
   userId?: string;
   coachId?: string;
   weight?: number;
-  sleepHour?: number;
+  sleepHour?: string;
   sleepQuality?: string;
   sick?: boolean;
   water?: string;
@@ -131,12 +129,11 @@ export interface IDailyTrackingHistory {
   userId: string;
 }
 
-
-export interface IDailyTrackingNotificationHistory{
-  userId:string;
-  coachId:string;
-  title:string;
-  comments:string;
+export interface IDailyTrackingNotificationHistory {
+  userId: string;
+  coachId: string;
+  title: string;
+  comments: string;
   fcmToken?: string;
   read?: boolean;
   sentAt?: Date;

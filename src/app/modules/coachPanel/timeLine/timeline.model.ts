@@ -5,7 +5,7 @@ const DailyDataSchema = new Schema(
     date: { type: String, required: true },
     userId: { type: Types.ObjectId, required: true, ref: 'Athlete' },
     weight: Number,
-    sleepHour: Number,
+    sleepHour: String,
     sleepQuality: String,
     sick: Boolean,
     water: String,
@@ -53,7 +53,7 @@ const DailyDataSchema = new Schema(
     },
     dailyNotes: String,
   },
-  { _id: false }
+  { _id: false },
 );
 
 const TimelineHistorySchema = new Schema(
@@ -84,12 +84,12 @@ const TimelineHistorySchema = new Schema(
       },
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 TimelineHistorySchema.index({ userId: 1, checkInDate: 1 }, { unique: true });
 
 export const TimelineHistoryModel = model(
   'TimelineHistory',
-  TimelineHistorySchema
+  TimelineHistorySchema,
 );

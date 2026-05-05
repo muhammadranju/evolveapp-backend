@@ -52,7 +52,7 @@ export interface DailyData {
   date: string;
   userId: Types.ObjectId;
   weight: number;
-  sleepHour: number;
+  sleepHour: string;
   sleepQuality: string;
   sick: boolean;
   water: string;

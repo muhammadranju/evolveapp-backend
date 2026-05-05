@@ -124,7 +124,7 @@ const DailyTrackingSchema = new Schema<DailyTracking>(
     },
     coachId: { type: String, required: false },
     weight: { type: Number, required: false },
-    sleepHour: { type: Number, required: false },
+    sleepHour: { type: String, required: false },
     sleepQuality: { type: String, required: false },
     sick: { type: Boolean, required: false },
     water: { type: String, required: false },

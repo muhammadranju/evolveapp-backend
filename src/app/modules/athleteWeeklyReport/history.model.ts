@@ -11,12 +11,12 @@ const WeeklyAverageSchema = new Schema(
     },
 
     sleepHour: {
-      type: Number,
+      type: String,
       required: true,
     },
 
     sleepQuality: {
-      type: Number,
+      type: String,
       required: true,
     },
 
@@ -63,10 +63,10 @@ const WeeklyAverageSchema = new Schema(
       bloodGlucose: { type: Number, required: true },
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const WeeklyAverageModel = model(
   'WeeklyAverageReport',
-  WeeklyAverageSchema
+  WeeklyAverageSchema,
 );

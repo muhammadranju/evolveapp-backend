@@ -5,8 +5,8 @@ export interface IWeeklyAverage {
   coachId: string;
   weekNumber?: number;
   weight: number;
-  sleepHour: number;
-  sleepQuality: number;
+  sleepHour: string;
+  sleepQuality: string;
   activityStep: number;
 
   energyAndWellBeing: IEnergyAndWellBeing;
