@@ -17,7 +17,7 @@ export class FoodItemService {
     search?: string,
     page = 1,
     limit = 10,
-    filter?: string
+    filter?: string,
   ) {
     const query: any = {};
 
@@ -25,7 +25,7 @@ export class FoodItemService {
       query.name = { $regex: search, $options: 'i' };
     }
     if (filter) {
-      query.name = { $regex: filter, $options: 'i' };
+      query.category = { $regex: filter, $options: 'i' };
     }
 
     const skip = (page - 1) * limit;
