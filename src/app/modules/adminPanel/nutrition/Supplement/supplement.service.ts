@@ -18,7 +18,7 @@ export class SupplementItemService {
     coachId?: string,
     search?: string,
     page = 1,
-    limit = 10
+    limit = 10,
   ) {
     const query: any = {};
 
@@ -53,7 +53,7 @@ export class SupplementItemService {
   async getAllSupplementsByAdmin(
     search?: string,
     page: number = 1,
-    limit: number = 10
+    limit?: number,
   ) {
     const query: any = {};
     // ✅ search by supplement name
@@ -61,12 +61,14 @@ export class SupplementItemService {
       query.name = { $regex: search, $options: 'i' };
     }
 
-    const skip = (page - 1) * limit;
+    const skip = (page - 1) * limit!;
 
     const [total, items] = await Promise.all([
       SupplementItemModel.countDocuments(query),
-      SupplementItemModel.find(query).skip(skip).limit(limit).lean(),
+      SupplementItemModel.find(query).skip(skip).limit(limit!).lean(),
     ]);
+
+    console.log(items);
 
     return {
       total,
@@ -93,36 +95,34 @@ export class SupplementItemService {
     });
   }
 
-
-    /**
+  /**
    * Update a supplement by ID
    */
-async updateSupplementByCoach(
-  id: string,
-  payload: Partial<ISupplementItem>,
-  coachId: string,
-  userId: string
-) {
-  const updated = await SupplementItemModel.findOneAndUpdate(
-    {
-      _id: id,
-      coachId: coachId,
-      userId: userId,
-    },
-    payload,
-    {
-      new: true,
-      runValidators: true,
+  async updateSupplementByCoach(
+    id: string,
+    payload: Partial<ISupplementItem>,
+    coachId: string,
+    userId: string,
+  ) {
+    const updated = await SupplementItemModel.findOneAndUpdate(
+      {
+        _id: id,
+        coachId: coachId,
+        userId: userId,
+      },
+      payload,
+      {
+        new: true,
+        runValidators: true,
+      },
+    );
+
+    if (!updated) {
+      throw new Error('Supplement not found or not authorized');
     }
-  );
 
-  if (!updated) {
-    throw new Error("Supplement not found or not authorized");
+    return updated;
   }
-
-  return updated;
-}
-
 
   /**
    * Delete a supplement by ID
@@ -132,7 +132,7 @@ async updateSupplementByCoach(
     return result;
   }
 
-    async deleteSupplementByCoach(id: string, coachId: string, userId: string) {
+  async deleteSupplementByCoach(id: string, coachId: string, userId: string) {
     const result = await SupplementItemModel.findOneAndDelete({
       _id: id,
       coachId: coachId,

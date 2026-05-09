@@ -8,6 +8,6 @@ export interface ISupplementItem {
   frequency?: string;
   time?: string;
   purpose: string;
-  productLink?: string;
+  productLink: string;
   note?: string;
 }

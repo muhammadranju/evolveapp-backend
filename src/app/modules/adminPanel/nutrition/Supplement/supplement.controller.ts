@@ -32,7 +32,7 @@ export class SupplementItemController {
         message: 'Supplement created successfully',
         data: result,
       });
-    }
+    },
   );
 
   addSupplementByAdmin = catchAsync(
@@ -54,7 +54,7 @@ export class SupplementItemController {
         message: 'Supplement created successfully',
         data: result,
       });
-    }
+    },
   );
 
   /**
@@ -78,7 +78,7 @@ export class SupplementItemController {
         coachId,
         search as string,
         Number(page) || 1,
-        Number(limit) || 10
+        Number(limit) || 10,
       );
 
       sendResponse(res, {
@@ -87,7 +87,7 @@ export class SupplementItemController {
         message: 'Supplements retrieved successfully',
         data: result,
       });
-    }
+    },
   );
 
   getAllSupplementsByAdmin = catchAsync(
@@ -97,7 +97,7 @@ export class SupplementItemController {
       const result = await supplementService.getAllSupplementsByAdmin(
         search as string,
         Number(page) || 1,
-        Number(limit) || 10
+        Number(limit),
       );
 
       sendResponse(res, {
@@ -106,7 +106,7 @@ export class SupplementItemController {
         message: 'Supplements retrieved successfully',
         data: result,
       });
-    }
+    },
   );
 
   /**
@@ -123,7 +123,7 @@ export class SupplementItemController {
         message: 'Supplement retrieved successfully',
         data: result,
       });
-    }
+    },
   );
 
   /**
@@ -134,7 +134,7 @@ export class SupplementItemController {
     async (req: Request, res: Response, next: NextFunction) => {
       const result = await supplementService.updateSupplement(
         req.params.id,
-        req.body
+        req.body,
       );
 
       sendResponse(res, {
@@ -143,19 +143,21 @@ export class SupplementItemController {
         message: 'Supplement updated successfully',
         data: result,
       });
-    }
+    },
   );
 
   updateSupplementByCoach = catchAsync(
     async (req: Request, res: Response, next: NextFunction) => {
-      const coachId=req.user.id;
-      const userId= req.params.userId
+      const coachId = req.user.id;
+      const userId = req.params.userId;
       console.log('Coach ID:', coachId);
       console.log('User ID:', userId);
       console.log('Supplement ID:', req.params.id);
       const result = await supplementService.updateSupplementByCoach(
         req.params.id,
-        req.body,coachId,userId
+        req.body,
+        coachId,
+        userId,
       );
 
       sendResponse(res, {
@@ -164,7 +166,7 @@ export class SupplementItemController {
         message: 'Supplement updated successfully',
         data: result,
       });
-    }
+    },
   );
 
   /**
@@ -181,15 +183,18 @@ export class SupplementItemController {
         message: 'Supplement deleted successfully',
         data: result,
       });
-    }
+    },
   );
 
-
-    deleteSupplementByCoach = catchAsync(
+  deleteSupplementByCoach = catchAsync(
     async (req: Request, res: Response, next: NextFunction) => {
-      const coachId=req.user.id;
-      const userId= req.params.userId;
-      const result = await supplementService.deleteSupplementByCoach(req.params.id, coachId, userId);
+      const coachId = req.user.id;
+      const userId = req.params.userId;
+      const result = await supplementService.deleteSupplementByCoach(
+        req.params.id,
+        coachId,
+        userId,
+      );
 
       sendResponse(res, {
         success: true,
@@ -197,8 +202,6 @@ export class SupplementItemController {
         message: 'Supplement deleted successfully',
         data: result,
       });
-    }
+    },
   );
-
-  
 }

@@ -16,6 +16,7 @@ app.use(
     origin: [
       'http://10.10.7.100:3000',
       'http://10.10.7.101:3001',
+      'http://10.10.7.99:3001',
       'http://localhost:3001',
       'http://localhost:3000',
       'https://www.evolveapp.fit',
