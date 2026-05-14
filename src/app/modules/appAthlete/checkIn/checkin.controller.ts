@@ -320,4 +320,51 @@ export class CheckInController {
       data: result,
     });
   });
+
+  getAthleteSliders = catchAsync(async (req: Request, res: Response) => {
+    const userId = req.params.athleteId || req.user.id;
+    const result = await checkInService.getAthleteSliders(userId);
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Active sliders fetched successfully',
+      data: result,
+    });
+  });
+
+  addSlider = catchAsync(async (req: Request, res: Response) => {
+    const athleteId = req.params.athleteId;
+    const coachId = req.user.id;
+    const result = await checkInService.addSlider(athleteId, coachId, req.body);
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Slider added successfully',
+      data: result,
+    });
+  });
+
+  updateSlider = catchAsync(async (req: Request, res: Response) => {
+    const athleteId = req.params.athleteId;
+    const sliderId = req.params.sliderId;
+    const result = await checkInService.updateSlider(athleteId, sliderId, req.body);
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Slider updated successfully',
+      data: result,
+    });
+  });
+
+  deleteSlider = catchAsync(async (req: Request, res: Response) => {
+    const athleteId = req.params.athleteId;
+    const sliderId = req.params.sliderId;
+    const result = await checkInService.deleteSlider(athleteId, sliderId);
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Slider deleted successfully',
+      data: result,
+    });
+  });
 }

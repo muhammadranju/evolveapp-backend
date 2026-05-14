@@ -26,6 +26,14 @@ export interface Training {
   trainingCompleted?: boolean;
 }
 
+export interface SliderAnswer {
+  title?: string;
+  value?: number;
+  inputType?: string;
+  min?: number;
+  max?: number;
+}
+
 export interface ICheckInInfo {
   userId?: String;
   slider?: {
@@ -49,6 +57,7 @@ export interface ICheckInInfo {
   checkinCompleted?: string;
   image?: string[];
   media?: string[];
+  sliderAnswers?: SliderAnswer[];
   createdAt?: Date;
   updatedAt?: Date;
 }

@@ -48,6 +48,22 @@ export class CheckInService {
       }));
     }
 
+    // Snapshot dynamic sliders
+    if (!payload.sliderAnswers || payload.sliderAnswers.length === 0) {
+      const activeSliders = await this.getAthleteSliders(
+        payload.userId as string,
+      );
+      if (activeSliders && activeSliders.length > 0) {
+        payload.sliderAnswers = activeSliders.map(s => ({
+          title: s.title,
+          inputType: s.inputType,
+          min: s.min,
+          max: s.max,
+          value: 0,
+        }));
+      }
+    }
+
     console.log(payload);
     // 2. Create check-in
     const result = await CheckInModel.create(payload);
@@ -528,5 +544,53 @@ export class CheckInService {
     });
 
     return history;
+  }
+
+  async getAthleteSliders(userId: string) {
+    const questionsDoc = await CheckInQuestionModel.findOne({ userId }).lean();
+    if (
+      !questionsDoc ||
+      !questionsDoc.sliders ||
+      questionsDoc.sliders.length === 0
+    ) {
+      return [];
+    }
+    return questionsDoc.sliders.filter(s => s.isActive !== false);
+  }
+
+  async addSlider(userId: string, coachId: string, sliderData: any) {
+    sliderData.isActive = true;
+    const updated = await CheckInQuestionModel.findOneAndUpdate(
+      { userId },
+      {
+        $setOnInsert: { coachId },
+        $push: { sliders: sliderData },
+      },
+      { upsert: true, new: true },
+    );
+    return updated.sliders;
+  }
+
+  async updateSlider(userId: string, sliderId: string, sliderData: any) {
+    const updateQuery: any = {};
+    for (const key in sliderData) {
+      updateQuery[`sliders.$.${key}`] = sliderData[key];
+    }
+
+    const updated = await CheckInQuestionModel.findOneAndUpdate(
+      { userId, 'sliders._id': sliderId },
+      { $set: updateQuery },
+      { new: true },
+    );
+    return updated?.sliders;
+  }
+
+  async deleteSlider(userId: string, sliderId: string) {
+    const updated = await CheckInQuestionModel.findOneAndUpdate(
+      { userId, 'sliders._id': sliderId },
+      { $set: { 'sliders.$.isActive': false } },
+      { new: true },
+    );
+    return updated?.sliders;
   }
 }

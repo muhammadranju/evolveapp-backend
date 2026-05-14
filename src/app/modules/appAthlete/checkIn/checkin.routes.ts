@@ -94,4 +94,28 @@ router.patch(
 // Delete a Check-in by ID
 router.delete('/:id', auth(USER_ROLES.SUPER_ADMIN), controller.deleteCheckIn);
 
+router.get(
+  '/sliders/:athleteId',
+  auth(USER_ROLES.COACH, USER_ROLES.ATHLETE, USER_ROLES.SUPER_ADMIN),
+  controller.getAthleteSliders,
+);
+
+router.post(
+  '/sliders/:athleteId',
+  auth(USER_ROLES.COACH),
+  controller.addSlider,
+);
+
+router.patch(
+  '/sliders/:athleteId/:sliderId',
+  auth(USER_ROLES.COACH),
+  controller.updateSlider,
+);
+
+router.delete(
+  '/sliders/:athleteId/:sliderId',
+  auth(USER_ROLES.COACH),
+  controller.deleteSlider,
+);
+
 export const CheckInRoter = router;

@@ -8,6 +8,14 @@ export const QuestionAnswerSchema = new Schema<QuestionAnswer>({
   status: { type: Boolean, default: false },
 });
 
+export const SliderAnswerSchema = new Schema({
+  title: { type: String },
+  value: { type: Number },
+  inputType: { type: String },
+  min: { type: Number },
+  max: { type: Number },
+});
+
 // Sub-schema for well-being
 // const WellBeingSchema = new Schema<WellBeing>({
 //   energyLevel: { type: Number },
@@ -33,6 +41,7 @@ const CheckInSchema = new Schema<ICheckInInfo>(
     coachNote: { type: String },
     image: { type: [String], default: [] },
     media: { type: [String], default: [] },
+    sliderAnswers: { type: [SliderAnswerSchema], default: [] },
     checkinCompleted: { type: String, default: 'Pending' },
   },
   { timestamps: true },
