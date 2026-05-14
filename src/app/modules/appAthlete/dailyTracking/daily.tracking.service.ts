@@ -4,6 +4,7 @@ import { calculateNumericAverages } from '../../../../util/calculate.average';
 import { weeklyReportService } from '../../athleteWeeklyReport/history.service';
 import { DailyTrackingNotificationHistoryModel } from './dailytracking.notification.model';
 import { formatDecimalToTimeStr } from '../../../../util/time.util';
+import { getDayNameUTC, getStartOfWeek, getWeekDates, normalizeToUTCMidnight } from '../../../../util/date.util';
 
 export class DailyTrackingService {
   /**
@@ -28,40 +29,16 @@ export class DailyTrackingService {
     })[];
     averages: ReturnType<typeof calculateNumericAverages>;
   }> {
-    let baseDate = new Date();
-    if (query?.date) {
-      const [y, m, d] = query.date.split('-').map(Number);
-      baseDate = new Date(y, m - 1, d);
-    }
-
-    const monday = new Date(baseDate);
-    monday.setDate(baseDate.getDate() - ((baseDate.getDay() + 6) % 7));
-
-    const weekDates: string[] = [];
-    for (let i = 1; i <= 7; i++) {
-      const d = new Date(monday);
-      d.setDate(monday.getDate() + i);
-      weekDates.push(d.toISOString().split('T')[0]); // "YYYY-MM-DD"
-    }
+    const monday = getStartOfWeek(query?.date);
+    const weekDates = getWeekDates(monday);
 
     const data = await DailyTrackingModel.find({
       userId,
       date: { $in: weekDates },
     }).lean();
 
-    const dayNames = [
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-      'Sunday',
-    ];
-
     const getDayName = (date: Date) => {
-      const jsDay = date.getDay();
-      return dayNames[(jsDay + 6) % 7];
+      return getDayNameUTC(date);
     };
 
     const dataMap = new Map(data.map(item => [item.date, item]));
@@ -69,8 +46,7 @@ export class DailyTrackingService {
     const weekData = weekDates.map(date => {
       const entry = dataMap.get(date);
 
-      const [y, m, d] = date.split('-').map(Number);
-      const dateObj = new Date(y, m - 1, d);
+      const dateObj = normalizeToUTCMidnight(date);
 
       return {
         ...(entry || { userId, coachId }),

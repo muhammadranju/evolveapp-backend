@@ -19,7 +19,7 @@ const daysOfWeek = [
 /** Send weekly notifications automatically */
 export const sendWeeklyNotifications = async (): Promise<void> => {
   try {
-    const today = daysOfWeek[new Date().getDay()];
+    const today = daysOfWeek[new Date().getUTCDay()];
     console.log(`Today is ${today}, checking athletes...`);
 
     const athletes = await getAthletesForToday(today);

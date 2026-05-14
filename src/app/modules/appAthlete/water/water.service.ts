@@ -3,14 +3,7 @@ import { Water } from './water.model';
 
 // helper to format today's date YYYY-MM-DD
 const getTodayDate = (): string => {
-  const swissDate = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Europe/Zurich',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(new Date());
-
-  return swissDate; // YYYY-MM-DD format
+  return new Date().toISOString().split('T')[0];
 };
 
 const createWaterToDB = async (payload: IWater) => {

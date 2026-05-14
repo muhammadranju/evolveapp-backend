@@ -18,7 +18,7 @@ export const getNextCheckInDateFormatted = (
     throw new Error('Invalid check-in day');
   }
 
-  const todayDay = today.getDay();
+  const todayDay = today.getUTCDay();
   let diff = targetDay - todayDay;
 
   if (diff < 0) {
@@ -26,7 +26,7 @@ export const getNextCheckInDateFormatted = (
   }
 
   const checkInDate = new Date(today);
-  checkInDate.setDate(today.getDate() + diff);
+  checkInDate.setUTCDate(today.getUTCDate() + diff);
 
   return checkInDate.toLocaleDateString('en-GB', {
     day: '2-digit',

@@ -1,6 +1,7 @@
 import { AthleteModel } from '../adminPanel/athlete/athleteModel';
 import { IWeeklyAverage } from './history.interface';
 import { WeeklyAverageModel } from './history.model';
+import { getDayNameUTC, normalizeToUTCMidnight } from '../../../util/date.util';
 
 export const weeklyReportService = async (payload: IWeeklyAverage) => {
   const { userId, coachId } = payload;
@@ -12,9 +13,7 @@ export const weeklyReportService = async (payload: IWeeklyAverage) => {
 
   const checkInDay = athlete.checkInDay;
 
-  const currentDay = new Date().toLocaleString('en-US', {
-    weekday: 'long',
-  });
+  const currentDay = getDayNameUTC(new Date());
 
   const filter = { userId, coachId };
 
@@ -36,7 +35,7 @@ export const weeklyReportService = async (payload: IWeeklyAverage) => {
       userId,
       coachId,
       createdAt: {
-        $gte: new Date(new Date().setHours(0, 0, 0, 0)),
+        $gte: normalizeToUTCMidnight(),
       },
     });
 

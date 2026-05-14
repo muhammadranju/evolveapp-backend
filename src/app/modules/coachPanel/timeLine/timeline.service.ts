@@ -78,12 +78,12 @@ export const buildTimelineHistory = async (
   if (!athlete?.checkInDay) return [];
 
   const checkDayIndex = dayMap[athlete.checkInDay];
-  const year = targetYear || new Date().getFullYear();
+  const year = targetYear || new Date().getUTCFullYear();
 
   // Find the first check-in date of the target year
-  let startDate = new Date(year, 0, 1);
-  while (startDate.getDay() !== checkDayIndex) {
-    startDate.setDate(startDate.getDate() + 1);
+  let startDate = new Date(Date.UTC(year, 0, 1));
+  while (startDate.getUTCDay() !== checkDayIndex) {
+    startDate.setUTCDate(startDate.getUTCDate() + 1);
   }
 
   // 1. Fetch tracking data for the selected year
@@ -101,7 +101,8 @@ export const buildTimelineHistory = async (
   const groupedByCheckIn = new Map<string, any[]>();
   for (const d of allTracking) {
     if (!d.date) continue;
-    const dt = new Date(d.date);
+    const [y, m, day] = d.date.split('-').map(Number);
+    const dt = new Date(Date.UTC(y, m - 1, day));
     const checkInDateStr = getPreviousOrSameCheckIn(dt, checkDayIndex)
       .toISOString()
       .slice(0, 10);
@@ -115,8 +116,9 @@ export const buildTimelineHistory = async (
   // 3. Sync history from tracking data (ensure all tracking data has history records)
   const bulkOps: any[] = [];
   for (const [checkInDate, windowData] of groupedByCheckIn.entries()) {
-    const nextCheckInDate = new Date(checkInDate);
-    nextCheckInDate.setDate(nextCheckInDate.getDate() + 7);
+    const [y, m, day] = checkInDate.split('-').map(Number);
+    const nextCheckInDate = new Date(Date.UTC(y, m - 1, day));
+    nextCheckInDate.setUTCDate(nextCheckInDate.getUTCDate() + 7);
 
     const averages = calculateConditionalAverages(windowData);
 
@@ -152,7 +154,7 @@ export const buildTimelineHistory = async (
   const results = [];
   for (let i = 0; i < 52; i++) {
     const currentCheckIn = new Date(startDate);
-    currentCheckIn.setDate(currentCheckIn.getDate() + i * 7);
+    currentCheckIn.setUTCDate(startDate.getUTCDate() + i * 7);
     const dateStr = currentCheckIn.toISOString().slice(0, 10);
 
     const match = allHistory.find((h: any) => h.checkInDate === dateStr);
@@ -165,7 +167,7 @@ export const buildTimelineHistory = async (
       });
     } else {
       const nextCheckIn = new Date(currentCheckIn);
-      nextCheckIn.setDate(nextCheckIn.getDate() + 7);
+      nextCheckIn.setUTCDate(currentCheckIn.getUTCDate() + 7);
       results.push({
         userId,
         checkInDate: dateStr,
@@ -238,8 +240,9 @@ export const bulkUpdateTimelinePhaseService = async (
         delete filter._id;
         filter.checkInDate = checkInDate;
 
-        const nextDate = new Date(checkInDate);
-        nextDate.setDate(nextDate.getDate() + 7);
+        const [y, m, day] = checkInDate.split('-').map(Number);
+        const nextDate = new Date(Date.UTC(y, m - 1, day));
+        nextDate.setUTCDate(nextDate.getUTCDate() + 7);
         const nextCheckInDateStr = nextDate.toISOString().slice(0, 10);
 
         update.$setOnInsert = {
@@ -280,8 +283,8 @@ export const bulkUpdateTimelinePhaseService = async (
 // ------------------------------------
 const getPreviousOrSameCheckIn = (date: Date, targetDay: number): Date => {
   const result = new Date(date);
-  const diff = (result.getDay() - targetDay + 7) % 7;
-  result.setDate(result.getDate() - diff);
+  const diff = (result.getUTCDay() - targetDay + 7) % 7;
+  result.setUTCDate(result.getUTCDate() - diff);
   return result;
 };
 
@@ -292,7 +295,7 @@ export const getAvailableTimelineYearsService = async (userId: string) => {
   const trackingDates = await DailyTrackingModel.distinct('date', { userId });
 
   const yearsSet = new Set<number>();
-  yearsSet.add(new Date().getFullYear());
+  yearsSet.add(new Date().getUTCFullYear());
 
   [...historyDates, ...trackingDates].forEach((dateStr: string) => {
     if (typeof dateStr === 'string' && dateStr.includes('-')) {
