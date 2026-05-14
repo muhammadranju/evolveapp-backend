@@ -288,4 +288,36 @@ export class CheckInController {
       data: result,
     });
   });
+
+  /**
+   * Get Weekly Check-in Table for Coach
+   * GET /api/v1/checkin/weekly-table/coach
+   */
+  getWeeklyCheckInTable = catchAsync(async (req: Request, res: Response) => {
+    const coachId = req.user.id;
+    const result = await checkInService.getWeeklyCheckInTable(coachId);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Weekly check-in table fetched successfully',
+      data: result,
+    });
+  });
+
+  /**
+   * Get Athlete Check-in History
+   * GET /api/v1/checkin/history/:athleteId
+   */
+  getAthleteCheckInHistory = catchAsync(async (req: Request, res: Response) => {
+    const athleteId = req.params.athleteId;
+    const result = await checkInService.getAthleteCheckInHistory(athleteId);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Athlete check-in history fetched successfully',
+      data: result,
+    });
+  });
 }

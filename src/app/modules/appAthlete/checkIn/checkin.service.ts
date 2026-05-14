@@ -441,4 +441,92 @@ export class CheckInService {
     );
     return updated;
   }
+
+  async getWeeklyCheckInTable(coachId: string) {
+    const athletes = await AthleteModel.aggregate([
+      { $match: { coachId: String(coachId), isActive: 'Active' } },
+      {
+        $lookup: {
+          from: 'checkins',
+          let: { athleteId: { $toString: '$_id' } },
+          pipeline: [
+            { $match: { $expr: { $eq: ['$userId', '$$athleteId'] } } },
+            { $sort: { createdAt: -1 } },
+            { $limit: 1 },
+            { $project: { createdAt: 1 } },
+          ],
+          as: 'latestCheckIn',
+        },
+      },
+      {
+        $project: {
+          athleteId: '$_id',
+          avatar: '$image',
+          name: 1,
+          email: 1,
+          latestCheckInDate: { $arrayElemAt: ['$latestCheckIn.createdAt', 0] },
+        },
+      },
+    ]);
+
+    return athletes.map(athlete => {
+      let nextCheckIn = null;
+      if (athlete.latestCheckInDate) {
+        const nextDate = new Date(athlete.latestCheckInDate);
+        nextDate.setUTCDate(nextDate.getUTCDate() + 7);
+        nextCheckIn = nextDate.toISOString().split('T')[0];
+      }
+
+      return {
+        athleteId: athlete.athleteId,
+        avatar: athlete.avatar,
+        name: athlete.name,
+        email: athlete.email,
+        nextCheckIn,
+      };
+    });
+  }
+
+  async getAthleteCheckInHistory(athleteId: string) {
+    const checkIns = await CheckInModel.find({ userId: athleteId })
+      .sort({ createdAt: 1 })
+      .select('createdAt currentWeight')
+      .lean();
+
+    const history = checkIns.map((checkIn, index) => {
+      let weightChange = 'First Week Check-in';
+
+      if (index > 0) {
+        const prevWeight = checkIns[index - 1].currentWeight;
+        const currWeight = checkIn.currentWeight;
+
+        if (
+          prevWeight !== undefined &&
+          prevWeight !== null &&
+          currWeight !== undefined &&
+          currWeight !== null
+        ) {
+          const diff = Number((currWeight - prevWeight).toFixed(2));
+          if (diff > 0) {
+            weightChange = `+${diff} KG`;
+          } else if (diff < 0) {
+            weightChange = `${diff} KG`;
+          } else {
+            weightChange = `0 KG`;
+          }
+        } else {
+          weightChange = 'N/A';
+        }
+      }
+
+      return {
+        checkInDate: checkIn.createdAt
+          ? checkIn.createdAt.toISOString().split('T')[0]
+          : null,
+        weightChange,
+      };
+    });
+
+    return history;
+  }
 }

@@ -49,4 +49,6 @@ export interface ICheckInInfo {
   checkinCompleted?: string;
   image?: string[];
   media?: string[];
+  createdAt?: Date;
+  updatedAt?: Date;
 }

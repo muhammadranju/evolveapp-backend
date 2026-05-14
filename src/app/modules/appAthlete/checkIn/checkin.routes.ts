@@ -26,6 +26,18 @@ router.get(
   auth(USER_ROLES.ATHLETE, USER_ROLES.SUPER_ADMIN, USER_ROLES.COACH),
   controller.getAllCheckIns,
 );
+
+router.get(
+  '/weekly-table/coach',
+  auth(USER_ROLES.COACH, USER_ROLES.SUPER_ADMIN),
+  controller.getWeeklyCheckInTable,
+);
+
+router.get(
+  '/history/:athleteId',
+  auth(USER_ROLES.COACH, USER_ROLES.ATHLETE, USER_ROLES.SUPER_ADMIN),
+  controller.getAthleteCheckInHistory,
+);
 router.get(
   '/date',
   auth(USER_ROLES.ATHLETE, USER_ROLES.SUPER_ADMIN),
