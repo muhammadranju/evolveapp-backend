@@ -367,4 +367,28 @@ export class CheckInController {
       data: result,
     });
   });
+
+  /**
+   * Compare multiple weeks of check-ins
+   * GET /api/v1/checkin/compare/:userId
+   */
+  getCheckInComparison = catchAsync(async (req: Request, res: Response) => {
+    const userId = req.params.userId;
+    const currentWeekId = req.query.currentWeekId as string;
+    // Handle either string or array parameters gracefully
+    const compareWeeks = req.query.compareWeeks;
+
+    const result = await checkInService.getCheckInComparison(
+      userId,
+      currentWeekId,
+      compareWeeks,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Comparison data fetched successfully',
+      data: result,
+    });
+  });
 }

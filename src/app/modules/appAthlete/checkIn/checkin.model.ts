@@ -41,7 +41,7 @@ const CheckInSchema = new Schema<ICheckInInfo>(
     coachNote: { type: String },
     image: { type: [String], default: [] },
     media: { type: [String], default: [] },
-    sliderAnswers: { type: [SliderAnswerSchema], default: [] },
+    // sliderAnswers: { type: [SliderAnswerSchema], default: [] },
     checkinCompleted: { type: String, default: 'Pending' },
   },
   { timestamps: true },

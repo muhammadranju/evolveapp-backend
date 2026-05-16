@@ -72,6 +72,12 @@ router.get(
   controller.getLatestCheckIns,
 );
 
+router.get(
+  '/compare/:userId',
+  auth(USER_ROLES.COACH, USER_ROLES.SUPER_ADMIN, USER_ROLES.ATHLETE),
+  controller.getCheckInComparison,
+);
+
 // Get a single Check-in by ID
 router.get('/:id', controller.getCheckInById);
 

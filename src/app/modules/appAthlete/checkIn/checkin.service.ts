@@ -593,4 +593,52 @@ export class CheckInService {
     );
     return updated?.sliders;
   }
+
+  /**
+   * Compare multiple weeks of check-ins dynamically
+   */
+  async getCheckInComparison(
+    userId: string,
+    currentWeekId: string,
+    compareWeeksInput: any,
+  ) {
+    let compareWeeks: string[] = [];
+    if (compareWeeksInput) {
+      if (Array.isArray(compareWeeksInput)) {
+        compareWeeks = compareWeeksInput;
+      } else if (typeof compareWeeksInput === 'string') {
+        compareWeeks = compareWeeksInput.split(',');
+      }
+    }
+
+    // Fetch the current week check-in
+    const currentCheckIn = await CheckInModel.findById(currentWeekId).lean();
+    if (!currentCheckIn) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Current week check-in not found');
+    }
+
+    // Fetch the comparison weeks
+    const comparisonCheckIns = await CheckInModel.find({
+      userId,
+      _id: { $in: compareWeeks.map(id => new Types.ObjectId(id)) },
+    }).sort({ createdAt: -1 }).lean();
+
+    // Helper to format a single check-in into normalized comparison-ready format
+    const formatCheckIn = (checkIn: any) => {
+      return {
+        id: checkIn._id,
+        date: checkIn.createdAt ? new Date(checkIn.createdAt).toISOString().split('T')[0] : "",
+        weight: checkIn.currentWeight,
+        averageWeight: checkIn.averageWeight,
+        wellbeing: checkIn.wellBeing || {},
+        questions: checkIn.questionAndAnswer || [],
+        notes: checkIn.coachNote || checkIn.athleteNote || "",
+      };
+    };
+
+    return {
+      currentWeek: formatCheckIn(currentCheckIn),
+      comparisons: comparisonCheckIns.map(formatCheckIn),
+    };
+  }
 }
