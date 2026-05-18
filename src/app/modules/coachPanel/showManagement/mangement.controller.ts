@@ -98,7 +98,10 @@ export class ShowManagementController {
       const { showId, userIds } = req.body;
 
       if (!showId || !userIds) {
-        throw new ApiError(StatusCodes.BAD_REQUEST, 'showId and userIds are required');
+        throw new ApiError(
+          StatusCodes.BAD_REQUEST,
+          'showId and userIds are required',
+        );
       }
 
       const result = await showService.assignShow({ showId, userIds });
@@ -107,6 +110,19 @@ export class ShowManagementController {
         success: true,
         statusCode: StatusCodes.OK,
         message: 'Show assigned successfully',
+        data: result,
+      });
+    },
+  );
+
+  deleteAssignedShow = catchAsync(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const result = await showService.deleteAssignedShow(req.params.id);
+
+      sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: 'Show deleted successfully',
         data: result,
       });
     },

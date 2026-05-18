@@ -27,8 +27,13 @@ router.delete(
 );
 router.post(
   '/show-assign',
-  // auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.COACH),
+  auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.COACH),
   showController.assignShow,
 );
+// router.delete(
+//   '/show-assign/:id',
+//   auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.COACH),
+//   showController.deleteAssignedShow,
+// );
 
 export const ShowManagementRoutes = router;

@@ -120,4 +120,21 @@ export class ShowManagementService {
 
     return { updatedUsers, message: 'Show assigned successfully' };
   }
+
+  async deleteAssignedShow(id: string) {
+    const assignedShow = await ShowManagementModel.findById(id);
+
+    if (!assignedShow) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Assigned show not found');
+    }
+
+    // const updatedUsers = await AthleteModel.updateMany(
+    //   { shows: assignedShow._id },
+    //   { $pull: { shows: assignedShow._id } },
+    // );
+    // console.log(updatedUsers);
+
+    const deletedAssignedShow = await ShowManagementModel.findByIdAndDelete(id);
+    return deletedAssignedShow;
+  }
 }

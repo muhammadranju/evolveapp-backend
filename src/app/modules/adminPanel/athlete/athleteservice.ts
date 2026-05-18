@@ -121,4 +121,27 @@ export class AthleteService {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Athlete not found');
     return athlete;
   }
+
+  async removeShow(athleteId: string, showId: string) {
+    const athlete = await AthleteModel.findById(athleteId);
+    if (!athlete) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Athlete not found');
+    }
+
+    const showExists = athlete.shows?.some(
+      (s: any) => s.toString() === showId,
+    );
+    if (!showExists) {
+      throw new ApiError(
+        StatusCodes.NOT_FOUND,
+        'Show not found in athlete record',
+      );
+    }
+
+    await AthleteModel.findByIdAndUpdate(
+      athleteId,
+      { $pull: { shows: showId } },
+      { new: true },
+    );
+  }
 }
