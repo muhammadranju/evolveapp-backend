@@ -48,7 +48,9 @@ export class TrainingPlanService {
   }
 
   async getTrainingPlansById(id: string, userId: string) {
-    const item = await TrainingPlanModel.findOne({ _id: id, userId });
+    const item = await TrainingPlanModel.findOne({ _id: id, userId })?.populate(
+      'exerciseId',
+    );
     return item;
   }
 
@@ -85,7 +87,9 @@ export class TrainingPlanService {
    */
   async reorderTrainingPlans(userId: string, id: string, newPosition: number) {
     // 1. Fetch all items for this user, sorted by position
-    const items = await TrainingPlanModel.find({ userId }).sort({ position: 1 });
+    const items = await TrainingPlanModel.find({ userId }).sort({
+      position: 1,
+    });
 
     if (items.length === 0) {
       throw new Error('No training plans found for this user');
@@ -160,7 +164,10 @@ export class TrainingPlanService {
     const [exerciseToMove] = exercises.splice(exerciseIndex, 1);
 
     // Target index (1-based to 0-based)
-    const targetIndex = Math.max(0, Math.min(newPosition - 1, exercises.length));
+    const targetIndex = Math.max(
+      0,
+      Math.min(newPosition - 1, exercises.length),
+    );
 
     exercises.splice(targetIndex, 0, exerciseToMove);
 

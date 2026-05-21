@@ -1,5 +1,9 @@
-import { model, Schema } from "mongoose";
-import { IExercise, ITrainingPlan, ITrainingPlanSets } from "./trainingplan.interface";
+import { model, Schema } from 'mongoose';
+import {
+  IExercise,
+  ITrainingPlan,
+  ITrainingPlanSets,
+} from './trainingplan.interface';
 
 const TrainingPlanSetsSchema = new Schema<ITrainingPlanSets>(
   {
@@ -19,7 +23,7 @@ const TrainingPlanSetsSchema = new Schema<ITrainingPlanSets>(
       trim: true,
     },
   },
-  { _id: false } // No separate _id for each set
+  { _id: false }, // No separate _id for each set
 );
 
 /* ================================
@@ -33,9 +37,14 @@ const ExerciseSchema = new Schema<IExercise>(
       required: true,
       trim: true,
     },
+    exerciseId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Exercise',
+      required: true,
+    },
     excerciseNote: {
       type: String,
-      default: "",
+      default: '',
       trim: true,
     },
     exerciseSets: {
@@ -49,7 +58,7 @@ const ExerciseSchema = new Schema<IExercise>(
   },
   {
     _id: true, // Each exercise will have its own Mongo _id
-  }
+  },
 );
 
 /* ================================
@@ -64,7 +73,7 @@ const TrainingPlanSchema = new Schema<ITrainingPlan>(
     },
     coachId: {
       type: Schema.Types.ObjectId,
-      ref: "Coach",
+      ref: 'Coach',
       required: true,
     },
     traingPlanName: {
@@ -72,6 +81,7 @@ const TrainingPlanSchema = new Schema<ITrainingPlan>(
       required: true,
       trim: true,
     },
+
     dificulty: {
       type: String,
       required: true,
@@ -79,7 +89,7 @@ const TrainingPlanSchema = new Schema<ITrainingPlan>(
     },
     comment: {
       type: String,
-      default: "",
+      default: '',
       trim: true,
     },
     exercise: {
@@ -93,7 +103,7 @@ const TrainingPlanSchema = new Schema<ITrainingPlan>(
   },
   {
     timestamps: true, // adds createdAt & updatedAt
-  }
+  },
 );
 
 /* ================================
@@ -101,6 +111,6 @@ const TrainingPlanSchema = new Schema<ITrainingPlan>(
 ================================ */
 
 export const TrainingPlanModel = model<ITrainingPlan>(
-  "TrainingPlanForAthlete",
-  TrainingPlanSchema
+  'TrainingPlanForAthlete',
+  TrainingPlanSchema,
 );

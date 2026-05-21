@@ -14,11 +14,13 @@ export class TrainingPlanController {
   addTrainingPlan = catchAsync(
     async (req: Request, res: Response, next: NextFunction) => {
       const userId = req.params.userId;
+      const exerciseId = req.body.exerciseId;
       const coachId = req.user.id;
       const payload = {
         ...req.body,
         userId,
         coachId,
+        exerciseId,
       };
       const result = await trainingPlanService.createTrainingPlan(payload);
 
@@ -28,7 +30,7 @@ export class TrainingPlanController {
         message: 'Training plan created successfully',
         data: result,
       });
-    }
+    },
   );
 
   /**
@@ -42,7 +44,7 @@ export class TrainingPlanController {
 
       const result = await trainingPlanService.getTrainingPlansByName(
         name as string,
-        userId
+        userId,
       );
 
       sendResponse(res, {
@@ -51,7 +53,7 @@ export class TrainingPlanController {
         message: 'Training plans retrieved successfully',
         data: result,
       });
-    }
+    },
   );
 
   getTrainingPlansById = catchAsync(
@@ -67,7 +69,7 @@ export class TrainingPlanController {
         message: 'Training plans retrieved by id successfully',
         data: result,
       });
-    }
+    },
   );
 
   /**
@@ -81,7 +83,7 @@ export class TrainingPlanController {
       const result = await trainingPlanService.updateTrainingPlan(
         userId,
         id,
-        req.body
+        req.body,
       );
 
       sendResponse(res, {
@@ -90,7 +92,7 @@ export class TrainingPlanController {
         message: 'Training plan updated successfully',
         data: result,
       });
-    }
+    },
   );
 
   reorderTrainingPlans = catchAsync(
@@ -101,7 +103,7 @@ export class TrainingPlanController {
       const result = await trainingPlanService.reorderTrainingPlans(
         userId,
         id,
-        newPosition
+        newPosition,
       );
 
       sendResponse(res, {
@@ -110,7 +112,7 @@ export class TrainingPlanController {
         message: 'Training plans reordered successfully',
         data: result,
       });
-    }
+    },
   );
 
   reorderExercises = catchAsync(
@@ -121,7 +123,7 @@ export class TrainingPlanController {
       const result = await trainingPlanService.reorderExercises(
         id,
         exerciseId,
-        newPosition
+        newPosition,
       );
 
       sendResponse(res, {
@@ -130,7 +132,7 @@ export class TrainingPlanController {
         message: 'Exercises reordered successfully',
         data: result,
       });
-    }
+    },
   );
 
   /**
@@ -149,6 +151,6 @@ export class TrainingPlanController {
         message: 'Training plan deleted successfully',
         data: result,
       });
-    }
+    },
   );
 }

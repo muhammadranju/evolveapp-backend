@@ -104,7 +104,7 @@ export class TrainingPushDayHistoryService {
    * Get Training Push Day History by ID
    */
   async getTrainingPushDayHistoryById(userId: string) {
-    const result = await TrainingPushDayHistoryModel.find({ userId });
+    const result = await TrainingPushDayHistoryModel.find({ userId }).sort({ createdAt: -1 })
 
     return result;
   }

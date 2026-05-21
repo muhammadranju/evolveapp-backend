@@ -3,6 +3,7 @@ import {
   calculateTotalNutritionFromPlans,
 } from '../../../../util/calculate.total.nutrition';
 import { FoodItemModel } from '../../adminPanel/nutrition/Food/food.model';
+import { parseTimeToMinutes } from '../../../../util/time.util';
 import { IAthleteNutritionPlan } from './athlete.nutrition.interface';
 import { AthleteNutritionPlanModel } from './athlete.nutrition.model';
 
@@ -89,6 +90,9 @@ export class AthleteNutritionPlanService {
         totalCalories: Number(totalCalories.toFixed(2)),
       };
     });
+
+    // Sort plans chronologically by time in ascending order
+    enrichedPlans.sort((a, b) => parseTimeToMinutes(a.time) - parseTimeToMinutes(b.time));
 
     // ✅ NEW: calculate grand totals
     const totals = calculateTotalNutritionFromPlans(enrichedPlans);

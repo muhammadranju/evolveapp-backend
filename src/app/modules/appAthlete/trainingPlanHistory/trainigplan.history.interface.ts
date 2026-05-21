@@ -10,6 +10,7 @@ export interface IPushData {
   rir: string;
   exerciseName: string;
   set: number;
+  exerciseNote: string;
   dateTime: string;
 }
 

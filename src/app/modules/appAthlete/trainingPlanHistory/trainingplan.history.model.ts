@@ -1,4 +1,4 @@
-import mongoose, { Schema, Types, Document } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import {
   IPushData,
   ITime,
@@ -25,6 +25,7 @@ const PushDataSchema = new Schema<IPushData>(
     rir: { type: String, required: true },
     set: { type: Number, required: true },
     exerciseName: { type: String },
+    exerciseNote: { type: String },
   },
   { _id: false },
 );

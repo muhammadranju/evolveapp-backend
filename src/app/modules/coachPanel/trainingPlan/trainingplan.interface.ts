@@ -1,10 +1,9 @@
 import { Types } from 'mongoose';
 
-
 export interface ITrainingPlanSets {
   sets: string;
   repRange: string;
-  rir: string; 
+  rir: string;
 }
 
 export interface IExercise {
@@ -13,6 +12,7 @@ export interface IExercise {
   exerciseSets: ITrainingPlanSets[];
   excerciseNote: string;
   position: number;
+  exerciseId: Types.ObjectId;
 }
 export interface ITrainingPlan extends Document {
   userId: string;
@@ -22,4 +22,5 @@ export interface ITrainingPlan extends Document {
   dificulty: string;
   comment: string;
   position: number;
+  exerciseId: Types.ObjectId;
 }
