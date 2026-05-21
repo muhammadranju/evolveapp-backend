@@ -18,7 +18,7 @@ router.get(
   auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ATHLETE, USER_ROLES.COACH),
   controller.getAllExercises
 );
-router.get('/:id', auth(USER_ROLES.SUPER_ADMIN), controller.getExerciseById);
+router.get('/:id', auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ATHLETE), controller.getExerciseById);
 router.put(
   '/:id',
   auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.COACH),
