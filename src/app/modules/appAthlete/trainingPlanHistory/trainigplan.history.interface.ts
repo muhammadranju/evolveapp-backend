@@ -4,12 +4,12 @@ export interface ITime {
   minite: string;
 }
 export interface IPushData {
-  reps: number;
+  rep: number;
   weight: number;
   repRange: string;
   rir: string;
   exerciseName: string;
-  set: number;
+  sets: number;
   exerciseNote: string;
   dateTime: string;
 }

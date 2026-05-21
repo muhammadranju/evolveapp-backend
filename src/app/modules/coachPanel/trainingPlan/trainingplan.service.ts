@@ -49,7 +49,7 @@ export class TrainingPlanService {
 
   async getTrainingPlansById(id: string, userId: string) {
     const item = await TrainingPlanModel.findOne({ _id: id, userId })?.populate(
-      'exerciseId',
+      'exercise.exerciseId',
     );
     return item;
   }

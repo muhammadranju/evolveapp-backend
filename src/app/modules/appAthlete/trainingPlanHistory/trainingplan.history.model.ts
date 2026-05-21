@@ -23,7 +23,7 @@ const PushDataSchema = new Schema<IPushData>(
     weight: { type: Number, required: true },
     repRange: { type: String, required: true },
     rir: { type: String, required: true },
-    set: { type: Number, required: true },
+    sets: { type: Number, required: true },
     exerciseName: { type: String },
     exerciseNote: { type: String },
   },
