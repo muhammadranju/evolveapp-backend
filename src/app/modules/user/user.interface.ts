@@ -12,6 +12,7 @@ export type IUser = {
   fcmToken: string;
   status: 'active' | 'delete';
   verified: boolean;
+  isActive: 'Active' | 'In-Active';
   authentication?: {
     isResetPassword: boolean;
     oneTimeCode: number;

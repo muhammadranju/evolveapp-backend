@@ -64,7 +64,7 @@ const athleteSchema = new Schema<IAthlete, AthleteType>(
     isActive: {
       type: String,
       enum: ['Active', 'In-Active'],
-      default: 'In-Active',
+      default: 'Active',
     },
     lastActive: { type: Date },
     shows: [

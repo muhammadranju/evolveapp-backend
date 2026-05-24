@@ -38,6 +38,10 @@ export class AthleteAuthService {
     //   throw new ApiError(StatusCodes.BAD_REQUEST, 'FCM token Needed!');
     // }
 
+    if (isExistAthlete.isActive === 'In-Active') {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Your account is In-Active, Please contact with admin!');
+    }
+
     if (!password) {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'Password is required!');
     }
@@ -49,10 +53,10 @@ export class AthleteAuthService {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'Password is incorrect!');
     }
 
-    await AthleteModel.findByIdAndUpdate(isExistAthlete._id, {
-      isActive: 'Active',
-      lastActive: new Date(),
-    });
+    // await AthleteModel.findByIdAndUpdate(isExistAthlete._id, {
+    //   isActive: 'Active',
+    //   lastActive: new Date(),
+    // });
 
     const createToken = jwtHelper.createToken(
       {
