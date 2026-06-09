@@ -386,7 +386,32 @@ export class CheckInService {
       );
     }
 
-    // 4. Send notification
+    // 4. Create NEW pending check-in for next cycle
+    const activeQuestions = await this.getAthleteQuestions(athleteId);
+    const activeSliders = await this.getAthleteSliders(athleteId);
+    const newCheckInPayload: Partial<ICheckInInfo> = {
+      userId: athleteId,
+      coachId: coachId,
+      checkinCompleted: 'Pending',
+      questionAndAnswer: activeQuestions.map(q => ({
+        question: q.question,
+        answer: '',
+        status: q.status,
+      })),
+      sliderAnswers:
+        activeSliders.length > 0
+          ? activeSliders.map(s => ({
+              title: s.title,
+              inputType: s.inputType,
+              min: s.min,
+              max: s.max,
+              value: 0,
+            }))
+          : undefined,
+    };
+    await CheckInModel.create(newCheckInPayload);
+
+    // 5. Send notification
     await this.sendCheckInNotification(
       athleteId,
       coachId,
@@ -614,25 +639,32 @@ export class CheckInService {
     // Fetch the current week check-in
     const currentCheckIn = await CheckInModel.findById(currentWeekId).lean();
     if (!currentCheckIn) {
-      throw new ApiError(StatusCodes.NOT_FOUND, 'Current week check-in not found');
+      throw new ApiError(
+        StatusCodes.NOT_FOUND,
+        'Current week check-in not found',
+      );
     }
 
     // Fetch the comparison weeks
     const comparisonCheckIns = await CheckInModel.find({
       userId,
       _id: { $in: compareWeeks.map(id => new Types.ObjectId(id)) },
-    }).sort({ createdAt: -1 }).lean();
+    })
+      .sort({ createdAt: -1 })
+      .lean();
 
     // Helper to format a single check-in into normalized comparison-ready format
     const formatCheckIn = (checkIn: any) => {
       return {
         id: checkIn._id,
-        date: checkIn.createdAt ? new Date(checkIn.createdAt).toISOString().split('T')[0] : "",
+        date: checkIn.createdAt
+          ? new Date(checkIn.createdAt).toISOString().split('T')[0]
+          : '',
         weight: checkIn.currentWeight,
         averageWeight: checkIn.averageWeight,
         wellbeing: checkIn.wellBeing || {},
         questions: checkIn.questionAndAnswer || [],
-        notes: checkIn.coachNote || checkIn.athleteNote || "",
+        notes: checkIn.coachNote || checkIn.athleteNote || '',
       };
     };
 
