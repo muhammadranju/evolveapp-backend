@@ -81,3 +81,65 @@ export const normalizeToUTCMidnight = (date?: string | Date): Date => {
   const d = date || new Date();
   return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
 };
+
+/**
+ * Generates an array of date strings (YYYY-MM-DD) for the entire month containing the given date.
+ */
+export const getMonthDates = (date?: string | Date): string[] => {
+  let d: Date;
+  if (typeof date === 'string') {
+    const [y, m, d_part] = date.split('-').map(Number);
+    d = new Date(Date.UTC(y, m - 1, d_part));
+  } else if (date instanceof Date) {
+    d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+  } else {
+    const now = new Date();
+    d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  }
+
+  const year = d.getUTCFullYear();
+  const month = d.getUTCMonth();
+
+  const endDate = new Date(Date.UTC(year, month + 1, 0));
+  const totalDays = endDate.getUTCDate();
+
+  const dates: string[] = [];
+  for (let i = 1; i <= totalDays; i++) {
+    const tempDate = new Date(Date.UTC(year, month, i));
+    dates.push(tempDate.toISOString().split('T')[0]);
+  }
+  
+  return dates;
+};
+
+/**
+ * Generates an array of date strings (YYYY-MM-DD) for the entire year containing the given date.
+ */
+export const getYearDates = (date?: string | Date): string[] => {
+  let d: Date;
+  if (typeof date === 'string') {
+    const [y, m, d_part] = date.split('-').map(Number);
+    d = new Date(Date.UTC(y, m - 1, d_part));
+  } else if (date instanceof Date) {
+    d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+  } else {
+    const now = new Date();
+    d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  }
+
+  const year = d.getUTCFullYear();
+  const dates: string[] = [];
+
+  for (let m = 0; m < 12; m++) {
+    const endDate = new Date(Date.UTC(year, m + 1, 0));
+    const totalDays = endDate.getUTCDate();
+    for (let i = 1; i <= totalDays; i++) {
+      const tempDate = new Date(Date.UTC(year, m, i));
+      dates.push(tempDate.toISOString().split('T')[0]);
+    }
+  }
+  
+  return dates;
+};
+
+

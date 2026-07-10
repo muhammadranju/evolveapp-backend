@@ -27,6 +27,12 @@ router.get(
   controller.getAllDailyTrackingByDate,
 );
 
+router.get(
+  '/graph/:userId',
+  auth(USER_ROLES.ATHLETE, USER_ROLES.COACH),
+  controller.getDailyTrackingGraph,
+);
+
 router.post('/', auth(USER_ROLES.ATHLETE), controller.createDailyTracking);
 router.get(
   '/:userId',

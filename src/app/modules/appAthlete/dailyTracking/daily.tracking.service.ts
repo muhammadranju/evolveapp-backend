@@ -3,8 +3,8 @@ import { DailyTracking } from './daily.tracking.interface';
 import { calculateNumericAverages } from '../../../../util/calculate.average';
 import { weeklyReportService } from '../../athleteWeeklyReport/history.service';
 import { DailyTrackingNotificationHistoryModel } from './dailytracking.notification.model';
-import { formatDecimalToTimeStr } from '../../../../util/time.util';
-import { getDayNameUTC, getStartOfWeek, getWeekDates, normalizeToUTCMidnight } from '../../../../util/date.util';
+import { formatDecimalToTimeStr, timeToDecimal } from '../../../../util/time.util';
+import { getDayNameUTC, getStartOfWeek, getWeekDates, normalizeToUTCMidnight, getMonthDates, getYearDates } from '../../../../util/date.util';
 
 export class DailyTrackingService {
   /**
@@ -66,6 +66,165 @@ export class DailyTrackingService {
     });
 
     return { weekData, averages };
+  }
+
+  /**
+   * Get daily tracking graph data for charts
+   */
+  async getDailyTrackingGraphData(
+    userId: string,
+    dateQuery?: string,
+    filter?: string,
+  ): Promise<{
+    sleepHours: { day: string; date: string; value: number }[];
+    mood: { day: string; date: string; value: number }[];
+    energy: { day: string; date: string; value: number }[];
+    stress: { day: string; date: string; value: number }[];
+    pmsSymptoms: { day: string; date: string; value: number }[];
+  }> {
+    const sleepHours: { day: string; date: string; value: number }[] = [];
+    const mood: { day: string; date: string; value: number }[] = [];
+    const energy: { day: string; date: string; value: number }[] = [];
+    const stress: { day: string; date: string; value: number }[] = [];
+    const pmsSymptoms: { day: string; date: string; value: number }[] = [];
+
+    if (filter === 'year') {
+      const year = normalizeToUTCMidnight(dateQuery).getUTCFullYear();
+      const data = await DailyTrackingModel.find({
+        userId,
+        date: { $gte: `${year}-01-01`, $lte: `${year}-12-31` },
+      }).lean();
+
+      const monthShortNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+      for (let m = 0; m < 12; m++) {
+        const monthData = data.filter(entry => {
+          if (!entry.date) return false;
+          const parts = entry.date.split('-');
+          const entryMonth = parseInt(parts[1], 10) - 1;
+          return entryMonth === m;
+        });
+
+        let totalSleep = 0, countSleep = 0;
+        let totalMood = 0, countMood = 0;
+        let totalEnergy = 0, countEnergy = 0;
+        let totalStress = 0, countStress = 0;
+        let totalPms = 0, countPms = 0;
+
+        monthData.forEach(entry => {
+          if (entry.sleepHour) {
+            const val = timeToDecimal(entry.sleepHour);
+            totalSleep += val;
+            countSleep++;
+          }
+          if (entry.energyAndWellBeing?.mood !== undefined) {
+            totalMood += entry.energyAndWellBeing.mood;
+            countMood++;
+          }
+          if (entry.energyAndWellBeing?.energyLevel !== undefined) {
+            totalEnergy += entry.energyAndWellBeing.energyLevel;
+            countEnergy++;
+          }
+          if (entry.energyAndWellBeing?.stressLevel !== undefined) {
+            totalStress += entry.energyAndWellBeing.stressLevel;
+            countStress++;
+          }
+          if (entry.woman?.pmsSymptoms !== undefined) {
+            totalPms += entry.woman.pmsSymptoms;
+            countPms++;
+          }
+        });
+
+        const monthName = monthShortNames[m];
+        const monthDateStr = `${year}-${(m + 1).toString().padStart(2, '0')}`;
+
+        sleepHours.push({
+          day: monthName,
+          date: monthDateStr,
+          value: countSleep > 0 ? Number((totalSleep / countSleep).toFixed(2)) : 0
+        });
+        mood.push({
+          day: monthName,
+          date: monthDateStr,
+          value: countMood > 0 ? Number((totalMood / countMood).toFixed(2)) : 0
+        });
+        energy.push({
+          day: monthName,
+          date: monthDateStr,
+          value: countEnergy > 0 ? Number((totalEnergy / countEnergy).toFixed(2)) : 0
+        });
+        stress.push({
+          day: monthName,
+          date: monthDateStr,
+          value: countStress > 0 ? Number((totalStress / countStress).toFixed(2)) : 0
+        });
+        pmsSymptoms.push({
+          day: monthName,
+          date: monthDateStr,
+          value: countPms > 0 ? Number((totalPms / countPms).toFixed(2)) : 0
+        });
+      }
+    } else {
+      let dates: string[];
+      if (filter === 'month') {
+        dates = getMonthDates(dateQuery);
+      } else {
+        const monday = getStartOfWeek(dateQuery);
+        dates = getWeekDates(monday);
+      }
+
+      const data = await DailyTrackingModel.find({
+        userId,
+        date: { $in: dates },
+      }).lean();
+
+      const dataMap = new Map(data.map(item => [item.date, item]));
+
+      dates.forEach(date => {
+        const entry = dataMap.get(date);
+        const dayName = getDayNameUTC(normalizeToUTCMidnight(date));
+
+        // sleepHours
+        const sleepVal = timeToDecimal(entry?.sleepHour);
+        sleepHours.push({ day: dayName, date, value: sleepVal });
+
+        // mood
+        mood.push({
+          day: dayName,
+          date,
+          value: entry?.energyAndWellBeing?.mood ?? 0,
+        });
+
+        // energy
+        energy.push({
+          day: dayName,
+          date,
+          value: entry?.energyAndWellBeing?.energyLevel ?? 0,
+        });
+
+        // stress
+        stress.push({
+          day: dayName,
+          date,
+          value: entry?.energyAndWellBeing?.stressLevel ?? 0,
+        });
+
+        // pmsSymptoms
+        pmsSymptoms.push({
+          day: dayName,
+          date,
+          value: entry?.woman?.pmsSymptoms ?? 0,
+        });
+      });
+    }
+
+    return {
+      sleepHours,
+      mood,
+      energy,
+      stress,
+      pmsSymptoms,
+    };
   }
 
   /**

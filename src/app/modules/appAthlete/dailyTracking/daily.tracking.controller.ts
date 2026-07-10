@@ -65,6 +65,30 @@ export class DailyTrackingController {
   );
 
   /**
+   * Get daily tracking graph data
+   * GET /api/v1/daily/tracking/graph/:userId
+   */
+  getDailyTrackingGraph = catchAsync(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const userId = req.params.userId;
+      const date = req.query.date as string | undefined;
+      const filter = req.query.filter as string | undefined;
+      const result = await dailyTrackingService.getDailyTrackingGraphData(
+        userId,
+        date,
+        filter
+      );
+
+      sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: 'Daily tracking graph data fetched successfully',
+        data: result,
+      });
+    }
+  );
+
+  /**
    * Get single daily tracking by ID
    * GET /api/v1/daily-tracking/:id
    */
