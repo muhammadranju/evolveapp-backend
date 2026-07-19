@@ -88,7 +88,51 @@ export class DailyTrackingService {
     const stress: { day: string; date: string; value: number }[] = [];
     const pmsSymptoms: { day: string; date: string; value: number }[] = [];
 
-    if (filter === 'year') {
+    if (filter === 'alltime') {
+      const data = await DailyTrackingModel.find({
+        userId,
+      })
+        .sort({ date: 1 })
+        .lean();
+
+      data.forEach(entry => {
+        if (!entry.date) return;
+        const dateObj = normalizeToUTCMidnight(entry.date);
+        const dayName = getDayNameUTC(dateObj);
+
+        // sleepHours
+        const sleepVal = timeToDecimal(entry.sleepHour);
+        sleepHours.push({ day: dayName, date: entry.date, value: sleepVal });
+
+        // mood
+        mood.push({
+          day: dayName,
+          date: entry.date,
+          value: entry.energyAndWellBeing?.mood ?? 0,
+        });
+
+        // energy
+        energy.push({
+          day: dayName,
+          date: entry.date,
+          value: entry.energyAndWellBeing?.energyLevel ?? 0,
+        });
+
+        // stress
+        stress.push({
+          day: dayName,
+          date: entry.date,
+          value: entry.energyAndWellBeing?.stressLevel ?? 0,
+        });
+
+        // pmsSymptoms
+        pmsSymptoms.push({
+          day: dayName,
+          date: entry.date,
+          value: entry.woman?.pmsSymptoms ?? 0,
+        });
+      });
+    } else if (filter === 'year') {
       const year = normalizeToUTCMidnight(dateQuery).getUTCFullYear();
       const data = await DailyTrackingModel.find({
         userId,
