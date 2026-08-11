@@ -81,12 +81,16 @@ export class DailyTrackingService {
     energy: { day: string; date: string; value: number }[];
     stress: { day: string; date: string; value: number }[];
     pmsSymptoms: { day: string; date: string; value: number }[];
+    hungerLevel: { day: string; date: string; value: number }[];
+    digestionLevel: { day: string; date: string; value: number }[];
   }> {
     const sleepHours: { day: string; date: string; value: number }[] = [];
     const mood: { day: string; date: string; value: number }[] = [];
     const energy: { day: string; date: string; value: number }[] = [];
     const stress: { day: string; date: string; value: number }[] = [];
     const pmsSymptoms: { day: string; date: string; value: number }[] = [];
+    const hungerLevel: { day: string; date: string; value: number }[] = [];
+    const digestionLevel: { day: string; date: string; value: number }[] = [];
 
     if (filter === 'alltime') {
       const data = await DailyTrackingModel.find({
@@ -131,6 +135,20 @@ export class DailyTrackingService {
           date: entry.date,
           value: entry.woman?.pmsSymptoms ?? 0,
         });
+
+        // hungerLevel
+        hungerLevel.push({
+          day: dayName,
+          date: entry.date,
+          value: entry.nutrition?.hungerLevel ?? 0,
+        });
+
+        // digestionLevel
+        digestionLevel.push({
+          day: dayName,
+          date: entry.date,
+          value: entry.nutrition?.digestionLevel ?? 0,
+        });
       });
     } else if (filter === 'year') {
       const year = normalizeToUTCMidnight(dateQuery).getUTCFullYear();
@@ -154,6 +172,8 @@ export class DailyTrackingService {
         let totalEnergy = 0, countEnergy = 0;
         let totalStress = 0, countStress = 0;
         let totalPms = 0, countPms = 0;
+        let totalHunger = 0, countHunger = 0;
+        let totalDigestion = 0, countDigestion = 0;
 
         monthData.forEach(entry => {
           if (entry.sleepHour) {
@@ -176,6 +196,14 @@ export class DailyTrackingService {
           if (entry.woman?.pmsSymptoms !== undefined) {
             totalPms += entry.woman.pmsSymptoms;
             countPms++;
+          }
+          if (entry.nutrition?.hungerLevel !== undefined) {
+            totalHunger += entry.nutrition.hungerLevel;
+            countHunger++;
+          }
+          if (entry.nutrition?.digestionLevel !== undefined) {
+            totalDigestion += entry.nutrition.digestionLevel;
+            countDigestion++;
           }
         });
 
@@ -206,6 +234,16 @@ export class DailyTrackingService {
           day: monthName,
           date: monthDateStr,
           value: countPms > 0 ? Number((totalPms / countPms).toFixed(2)) : 0
+        });
+        hungerLevel.push({
+          day: monthName,
+          date: monthDateStr,
+          value: countHunger > 0 ? Number((totalHunger / countHunger).toFixed(2)) : 0
+        });
+        digestionLevel.push({
+          day: monthName,
+          date: monthDateStr,
+          value: countDigestion > 0 ? Number((totalDigestion / countDigestion).toFixed(2)) : 0
         });
       }
     } else {
@@ -259,6 +297,20 @@ export class DailyTrackingService {
           date,
           value: entry?.woman?.pmsSymptoms ?? 0,
         });
+
+        // hungerLevel
+        hungerLevel.push({
+          day: dayName,
+          date,
+          value: entry?.nutrition?.hungerLevel ?? 0,
+        });
+
+        // digestionLevel
+        digestionLevel.push({
+          day: dayName,
+          date,
+          value: entry?.nutrition?.digestionLevel ?? 0,
+        });
       });
     }
 
@@ -268,6 +320,8 @@ export class DailyTrackingService {
       energy,
       stress,
       pmsSymptoms,
+      hungerLevel,
+      digestionLevel,
     };
   }
 
